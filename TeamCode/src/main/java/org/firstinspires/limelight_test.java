@@ -123,7 +123,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @TeleOp
-public class LimelightTest extends LinearOpMode {
+public class limelight_test extends LinearOpMode {
 
     private Limelight3A limelight;
 
@@ -145,7 +145,3 @@ public class LimelightTest extends LinearOpMode {
     }
 }
 
-*/if (limelight.isConnected()){
-  telemetry.addLine("LIMELIGHT CONNECTED");
-  telemetry.update();
-*/}
