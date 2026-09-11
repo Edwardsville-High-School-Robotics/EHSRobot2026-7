@@ -115,3 +115,37 @@ public class SampleOpMode_Linear extends LinearOpMode {
 }
 LIAM_MCGUE 9/11/2026 14:31: Everything commented out above is unrelated to limelight.
 */
+
+package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+@TeleOp
+public class LimelightTest extends LinearOpMode {
+
+    private Limelight3A limelight;
+
+    @Override
+    public void runOpMode() {
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.start();
+
+        waitForStart();
+
+        while (opModeIsActive()) {
+            if (limelight.isConnected()) {
+                telemetry.addLine("LIMELIGHT CONNECTED");
+            } else {
+                telemetry.addLine("LIMELIGHT NOT CONNECTED");
+            }
+            telemetry.update();
+        }
+    }
+}
+
+*/if (limelight.isConnected()){
+  telemetry.addLine("LIMELIGHT CONNECTED");
+  telemetry.update();
+*/}
