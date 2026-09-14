@@ -4,9 +4,14 @@
 package org.firstinspires.ftc.teamcode;
 
 // Imported code for the limelight 3a as well as other robot functions.
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import java.util.List;
 
 @TeleOp
 public class limelight_test extends LinearOpMode {
@@ -31,6 +36,16 @@ public class limelight_test extends LinearOpMode {
         while (opModeIsActive()) {
             if (lime_light.isConnected()) {
                 telemetry.addLine("LIMELIGHT CONNECTED");
+
+                LLResult result = lime_light.getLatestResult();
+
+
+                telemetry.addLine("Current Pipeline: " + result.getPipelineIndex());
+
+                List<LLResultTypes.FiducialResult> aprilTags = result.getFiducialResults();
+                telemetry.addLine("Number of April Tags Seen = " + aprilTags.toArray().length);
+
+
             } else {
                 telemetry.addLine("LIMELIGHT NOT CONNECTED");
             }
