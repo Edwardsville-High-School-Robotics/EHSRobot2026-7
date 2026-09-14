@@ -17,7 +17,8 @@ public class limelight_test extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        //These two lines of code "gets the limelight" and has it start.
+        // Limelight3A.class gives the function what type of object it is geting. "limelight" is the name on the Driver's Hub i think. If it is it has to be the exact same
+        // Second line has it start.
         lime_light = hardwareMap.get(Limelight3A.class, "limelight");
         lime_light.start();
 
