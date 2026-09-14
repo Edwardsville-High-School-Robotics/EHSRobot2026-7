@@ -1,4 +1,5 @@
 // This algorithm is the algorithm used for testing the limelight 3a. As of 9/12/2026 it is being used to test the connection of the limelight 3a to the control hub.
+// this is the docs: https://javadoc.io/doc/org.firstinspires.ftc/Hardware/latest/com/qualcomm/hardware/limelightvision/package-summary.html
 
 package org.firstinspires.ftc.teamcode;
 
