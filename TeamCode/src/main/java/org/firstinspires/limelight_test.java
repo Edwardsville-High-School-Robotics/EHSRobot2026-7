@@ -1,5 +1,6 @@
 // This algorithm is the algorithm used for testing the limelight 3a. As of 9/12/2026 it is being used to test the connection of the limelight 3a to the control hub.
 // this is the docs: https://javadoc.io/doc/org.firstinspires.ftc/Hardware/latest/com/qualcomm/hardware/limelightvision/package-summary.html
+// These are the FTC SDK docs: https://javadoc.io/doc/org.firstinspires.ftc
 
 package org.firstinspires.ftc.teamcode;
 
@@ -35,16 +36,24 @@ public class limelight_test extends LinearOpMode {
         // If the limelight 3a is connected, it will print "LIMELIGHT CONNECTED". If the limelight 3a in not connected, it will print "LIMELIGHT NOT CONNECTED".
         while (opModeIsActive()) {
             if (lime_light.isConnected()) {
+
+                // Adds the message showing that the limelight3a is connected
                 telemetry.addLine("LIMELIGHT CONNECTED");
 
+                // Creates the object/variable result
                 LLResult result = lime_light.getLatestResult();
 
-
+                // Prints the current pipeline
                 telemetry.addLine("Current Pipeline: " + result.getPipelineIndex());
 
+                // Adds a list get contains the apriltags that the limelight3a sees.
+                // Adds the message showing number of apriltags seen by limelight3a. The number of them is gained by finding the length of the list
                 List<LLResultTypes.FiducialResult> aprilTags = result.getFiducialResults();
                 telemetry.addLine("Number of April Tags Seen = " + aprilTags.toArray().length);
 
+// CODE TO TEST:
+                telemetry.addLine(lime_light.getTargetPoseCameraSpace());
+                
 
             } else {
                 telemetry.addLine("LIMELIGHT NOT CONNECTED");
