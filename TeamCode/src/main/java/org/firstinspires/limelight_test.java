@@ -24,6 +24,9 @@ public class limelight_test extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        Servo xz_plane_servo  = hardwareMap.get(Servo.class, "bottom_servo");
+        Servo yz_plane_servo = hardwareMap.get(Servo.class, "top_servo");
+        
         // Limelight3A.class gives the function what type of object it is geting. "limelight" is the name on the Driver's Hub i think. If it is it has to be the exact same
         // Second line has it start.
         lime_light = hardwareMap.get(Limelight3A.class, "limelight");
@@ -52,7 +55,11 @@ public class limelight_test extends LinearOpMode {
                 telemetry.addLine("Number of April Tags Seen = " + aprilTags.toArray().length);
 
 // CODE TO TEST:
-                telemetry.addLine(lime_light.getTargetPoseCameraSpace());
+                telemetry.addLine(lime_light.getTargetXDegrees());
+                telemetry.addLine(lime_light.getTargetYDegrees());
+                
+                xz_plane_servo.setPosition(double lime_light.getTargetXDegrees());
+                yz_plane_servo.setPosition(double lime_light.getTargetYDegrees());
                 
 
             } else {
