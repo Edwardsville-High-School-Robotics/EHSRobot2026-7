@@ -10,6 +10,9 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Servo;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.List;
@@ -24,8 +27,8 @@ public class limelight_test extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        Servo xz_plane_servo  = hardwareMap.get(Servo.class, "bottom_servo");
-        Servo yz_plane_servo = hardwareMap.get(Servo.class, "top_servo");
+        CRServo xz_plane_servo  = hardwareMap.get(CRServo.class, "x_servo");
+       // CRServo yz_plane_servo = hardwareMap.get(CRServo.class, "top_servo");
         
         // Limelight3A.class gives the function what type of object it is geting. "limelight" is the name on the Driver's Hub i think. If it is it has to be the exact same
         // Second line has it start.
@@ -53,13 +56,43 @@ public class limelight_test extends LinearOpMode {
                 // Adds the message showing number of apriltags seen by limelight3a. The number of them is gained by finding the length of the list
                 List<LLResultTypes.FiducialResult> aprilTags = result.getFiducialResults();
                 telemetry.addLine("Number of April Tags Seen = " + aprilTags.toArray().length);
+                double angleX=0, powerX=0;
+                if (aprilTags.toArray().length > 0){
+                    LLResultTypes.FiducialResult targetTag = aprilTags.get(0);
 
+                    // targetTag.getTargetXDegrees(); -> gets x angle to april tag
+                    // targetTag.getTargetYDegrees(); -> gets y angle to april tag
+
+                    // xz_plane_servo.setPosition(); sets rotation of the servo from [0,1]
+
+                    angleX = -targetTag.getTargetXDegrees();
+                    double angleY = targetTag.getTargetYDegrees();
+
+                    powerX = angleX * 0.01;
+
+
+                    if (powerX > .1) {
+                        powerX = .1;
+                    } else if (powerX < -.1) {
+                        powerX = -.1;
+                    }
+
+
+                    xz_plane_servo.setPower(powerX);
+                }
+                else
+                {
+                    xz_plane_servo.setPower(0);
+                }
+
+                telemetry.addLine("Current Y Angle: " + angleX);
+                telemetry.addLine("Current X Power: " + powerX);
 // CODE TO TEST:
-                telemetry.addLine(lime_light.getTargetXDegrees());
-                telemetry.addLine(lime_light.getTargetYDegrees());
+                //telemetry.addLine(lime_light.getTargetXDegrees());
+                //telemetry.addLine(lime_light.getTargetYDegrees());
                 
-                xz_plane_servo.setPosition(double lime_light.getTargetXDegrees());
-                yz_plane_servo.setPosition(double lime_light.getTargetYDegrees());
+                //xz_plane_servo.setPosition(lime_light.getTargetXDegrees());
+                //yz_plane_servo.setPosition(lime_light.getTargetYDegrees());
                 
 
             } else {
