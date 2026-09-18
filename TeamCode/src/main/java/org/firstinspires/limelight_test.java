@@ -28,7 +28,7 @@ public class limelight_test extends LinearOpMode {
     public void runOpMode() {
 
         CRServo xz_plane_servo  = hardwareMap.get(CRServo.class, "x_servo");
-       // CRServo yz_plane_servo = hardwareMap.get(CRServo.class, "top_servo");
+        Servo yz_plane_servo = hardwareMap.get(Servo.class, "top_servo");
         
         // Limelight3A.class gives the function what type of object it is geting. "limelight" is the name on the Driver's Hub i think. If it is it has to be the exact same
         // Second line has it start.
@@ -38,9 +38,24 @@ public class limelight_test extends LinearOpMode {
         // This function has the algorithm pause until the limelight has finished starting.
         waitForStart();
 
+        double angleY=0, powerY=0;
+        double servoTarget = yz_plane_servo.getPosition();
         // This while look will print a message everytime it repeats.
         // If the limelight 3a is connected, it will print "LIMELIGHT CONNECTED". If the limelight 3a in not connected, it will print "LIMELIGHT NOT CONNECTED".
         while (opModeIsActive()) {
+
+            if (gamepad1.dpadUpWasPressed())
+            {
+                angleY += 0.1;
+                angleY = Math.min(1, angleY);
+            }
+            if (gamepad1.dpadDownWasPressed())
+            {
+                angleY -= 0.1;
+                angleY = Math.max(0, angleY);
+            }
+
+
             if (lime_light.isConnected()) {
 
                 // Adds the message showing that the limelight3a is connected
@@ -54,22 +69,26 @@ public class limelight_test extends LinearOpMode {
 
                 // Adds a list get contains the apriltags that the limelight3a sees.
                 // Adds the message showing number of apriltags seen by limelight3a. The number of them is gained by finding the length of the list
-                List<LLResultTypes.FiducialResult> aprilTags = result.getFiducialResults();
-                telemetry.addLine("Number of April Tags Seen = " + aprilTags.toArray().length);
+//                List<LLResultTypes.FiducialResult> aprilTags = result.getFiducialResults();
+//                telemetry.addLine("Number of April Tags Seen = " + aprilTags.toArray().length);
                 double angleX=0, powerX=0;
-                if (aprilTags.toArray().length > 0){
-                    LLResultTypes.FiducialResult targetTag = aprilTags.get(0);
+                if (result.isValid()) {
+//                    LLResultTypes.FiducialResult targetTag = aprilTags.get(0);
 
                     // targetTag.getTargetXDegrees(); -> gets x angle to april tag
                     // targetTag.getTargetYDegrees(); -> gets y angle to april tag
 
                     // xz_plane_servo.setPosition(); sets rotation of the servo from [0,1]
 
-                    angleX = -targetTag.getTargetXDegrees();
-                    double angleY = targetTag.getTargetYDegrees();
+                    angleX = result.getTx();
+                    angleY = result.getTy();
+                    //double servoTarget = yz_plane_servo.getPosition()
+                    servoTarget += angleY / 720;
 
-                    powerX = angleX * 0.01;
+                    servoTarget = Math.min(Math.max(servoTarget, 0), 0.75);
 
+                    powerX = -angleX * 0.01;
+                    //angleY = angleY + yz_plane_servo.getPosition();
 
                     if (powerX > .1) {
                         powerX = .1;
@@ -77,17 +96,23 @@ public class limelight_test extends LinearOpMode {
                         powerX = -.1;
                     }
 
-
+                    yz_plane_servo.setPosition(servoTarget);
                     xz_plane_servo.setPower(powerX);
+
+
                 }
                 else
                 {
+                    yz_plane_servo.setPosition(0.33);
                     xz_plane_servo.setPower(0);
                 }
-
-                telemetry.addLine("Current Y Angle: " + angleX);
+                // yx_plane_servo.setposition(current_position + angleY)
+                telemetry.addLine("Current Y Servo: " + yz_plane_servo.getPosition());
+                telemetry.addLine("Current X Angle: " + angleX);
                 telemetry.addLine("Current X Power: " + powerX);
-// CODE TO TEST:
+                telemetry.addLine("Current Y Angle: " + angleY);
+                telemetry.addLine("Current Y Power: " + powerY);
+                // CODE TO TEST:
                 //telemetry.addLine(lime_light.getTargetXDegrees());
                 //telemetry.addLine(lime_light.getTargetYDegrees());
                 
