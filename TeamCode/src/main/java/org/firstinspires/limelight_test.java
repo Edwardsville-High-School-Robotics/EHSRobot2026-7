@@ -46,6 +46,7 @@ public class limelight_test extends LinearOpMode {
         double xSensitivity = 0;
         double ySensitivity = 0;
         double angleX=0, powerX=0;
+        double sensitivity = 1440;
 
         // This is the while loop the main bit of the algorithm runs in. It repeats faster than the limelight updates.
         while (opModeIsActive()) {
@@ -56,13 +57,15 @@ public class limelight_test extends LinearOpMode {
             // Y-axis servo angle controller with game_controller
             if (gamepad1.dpadUpWasPressed())
             {
-                angleY += 0.1;
-                angleY = Math.min(1, angleY);
+                sensitivity -= 100;
+                if(sensitivity <= 0)
+                {
+                    sensitivity = 1;
+                }
             }
             if (gamepad1.dpadDownWasPressed())
             {
-                angleY -= 0.1;
-                angleY = Math.max(0, angleY);
+                sensitivity += 100;
             }
 
             // This is the portion of the code that works with lime_light
@@ -93,7 +96,7 @@ public class limelight_test extends LinearOpMode {
                         angleX = result.getTx();
                         angleY = result.getTy();
                         //double servoTarget = yz_plane_servo.getPosition()
-                        servoTarget += angleY / 1440;
+                        servoTarget += angleY / sensitivity;
 
                         // Clamping for the Y-axis
                         servoTarget = Math.min(Math.max(servoTarget, 0), 0.75);
