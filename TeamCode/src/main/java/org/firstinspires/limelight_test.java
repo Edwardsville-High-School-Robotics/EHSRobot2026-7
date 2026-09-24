@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -37,10 +38,9 @@ public class limelight_test extends LinearOpMode {
         lime_light.start();
         waitForStart();
 
-        LLResult ooglyboogly = lime_light.getLatestResult();
 
         // Creating the variables needed for the limelight tracking.
-        double angleY=ooglyboogly.getTy()+1, powerY=0;
+        double angleY=0.33, powerY=0;
         double servoTarget = yz_plane_servo.getPosition();
         double timeSinceUpdate = lime_light.getTimeSinceLastUpdate();
         double xSensitivity = 0;
@@ -50,10 +50,8 @@ public class limelight_test extends LinearOpMode {
 
         // This is the while loop the main bit of the algorithm runs in. It repeats faster than the limelight updates.
         while (opModeIsActive()) {
-
-            LLResult result = lime_light.getLatestResult();
-            double schmungus_among_us=result.getTy();
-
+            double prevTimeSinceUpdate = timeSinceUpdate;
+            timeSinceUpdate =  lime_light.getTimeSinceLastUpdate();
             // Y-axis servo angle controller with game_controller
             if (gamepad1.dpadUpWasPressed())
             {
@@ -71,6 +69,8 @@ public class limelight_test extends LinearOpMode {
             // This is the portion of the code that works with lime_light
             if (lime_light.isConnected()) {
 
+                LLResult result = lime_light.getLatestResult();
+
                 // Adds the message showing that the limelight3a is connected
                 telemetry.addLine("LIMELIGHT CONNECTED");
 
@@ -84,44 +84,38 @@ public class limelight_test extends LinearOpMode {
 //                telemetry.addLine("Number of April Tags Seen = " + aprilTags.toArray().length); <-- This prints the # of april tags
 
                 // This if function is necessary for the case than the limelight is not seeing an april tag.
+
+
                 //if (result.isValid() && timeSinceUpdate > lime_light.getTimeSinceLastUpdate()) {
-                if (result.isValid() && angleY != schmungus_among_us) {
+                telemetry.addLine("Previous Time Since update: " + prevTimeSinceUpdate + " Time since update: " + timeSinceUpdate);
+                if (result.isValid() && prevTimeSinceUpdate > timeSinceUpdate) {
 //                    LLResultTypes.FiducialResult targetTag = aprilTags.get(0);
 
-                        // targetTag.getTargetXDegrees(); -> gets x angle to april tag
-                        // targetTag.getTargetYDegrees(); -> gets y angle to april tag
+                    // targetTag.getTargetXDegrees(); -> gets x angle to april tag
+                    // targetTag.getTargetYDegrees(); -> gets y angle to april tag
 
-                        // xz_plane_servo.setPosition(); sets rotation of the servo from [0,1]
+                    // xz_plane_servo.setPosition(); sets rotation of the servo from [0,1]
 
-                        angleX = result.getTx();
-                        angleY = result.getTy();
-                        //double servoTarget = yz_plane_servo.getPosition()
-                        servoTarget += angleY / sensitivity;
+                    angleX = result.getTx();
+                    angleY = result.getTy();
+                    //double servoTarget = yz_plane_servo.getPosition()
+                    servoTarget += angleY / sensitivity;
 
-                        // Clamping for the Y-axis
-                        servoTarget = Math.min(Math.max(servoTarget, 0), 0.75);
-
-
-                        powerX = -angleX * 0.01;
-                        //angleY = angleY + yz_plane_servo.getPosition();
-
-                        // Clamping for the X-axis
-                        if (powerX > .1) {
-                            powerX = .1;
-                        } else if (powerX < -.1) {
-                            powerX = -.1;
-                        }
+                    // Clamping for the Y-axis
+                    servoTarget = Math.min(Math.max(servoTarget, 0), 0.75);
 
 
-                        yz_plane_servo.setPosition(servoTarget);
-                        xz_plane_servo.setPower(powerX);
+                    powerX = -angleX * 0.01;
+                    //angleY = angleY + yz_plane_servo.getPosition();
 
-                    }
-                    else
-                    {
-                        yz_plane_servo.setPosition(0.33);
-                        xz_plane_servo.setPower(0);
-                    }
+                    // Clamping for the X-axis
+                    Range.clip(powerX, -.1, .1);
+
+                    telemetry.addLine("Servo Target" + servoTarget);
+                    telemetry.addLine("PowerX " + powerX);
+                    yz_plane_servo.setPosition(servoTarget);
+                    xz_plane_servo.setPower(powerX);
+                }
 
                 telemetry.addLine("TimeSinceLasteUpdate: " + lime_light.getTimeSinceLastUpdate());
 
