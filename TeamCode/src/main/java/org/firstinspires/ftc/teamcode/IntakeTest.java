@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -56,11 +58,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp
 public class IntakeTest extends LinearOpMode {
-
-    private DcMotorEx intakeMotor = null;
-
-    private IMU imu = null;
-
     final double MAX_DRIVE_POWER = 1.0;
 
     @Override
@@ -69,33 +66,33 @@ public class IntakeTest extends LinearOpMode {
         telemetry.update();
 
 
-        intakeMotor = hardwareMap.get(DcMotorEx.class, "artifact_feeder");
-        imu = hardwareMap.get(IMU.class, "imu");
-        DcMotorEx leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        DcMotorEx leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
-        DcMotorEx rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
-        DcMotorEx rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
-
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "artifact_feeder");
+        Limelight3A lime_light = hardwareMap.get(Limelight3A.class, "limelight");
 
         intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
-        // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
-        imu.initialize(parameters);
 
+        MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
+
+        PDController pdController = new PDController(15.0, 1.0);
+        lime_light.start();
         waitForStart();
 
-        boolean isLocal = false;
         boolean isIntaking = false;
+        boolean isTracking = false;
 
         double intakeMotorSpeed = 0.2;
 
+        double timeSinceUpdate = 0;
+
 
         while (opModeIsActive()) {
+            double prevTimeSinceUpdate = timeSinceUpdate;
+            timeSinceUpdate =  lime_light.getTimeSinceLastUpdate();
+
             double y = gamepad1.left_stick_y; // Remember, Y stick value is reversed
             double x = -gamepad1.left_stick_x;
             double rx = -gamepad1.right_stick_x;
@@ -113,6 +110,32 @@ public class IntakeTest extends LinearOpMode {
             {
                 intakeMotorSpeed -= 0.1;
             }
+
+            if (gamepad1.dpadLeftWasPressed())
+            {
+                double d = pdController.GetD()-0.1;
+                pdController.SetD(d);
+            }
+
+            if (gamepad1.dpadRightWasPressed())
+            {
+                double d = pdController.GetD()+0.1;
+                pdController.SetD(d);
+            }
+
+            if (gamepad1.leftBumperWasPressed())
+            {
+                double p = pdController.GetP()-0.1;
+                pdController.SetP(p);
+            }
+
+
+            if (gamepad1.rightBumperWasPressed())
+            {
+                double p = pdController.GetP()+0.1;
+                pdController.SetP(p);
+            }
+
             intakeMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
 
             if (isIntaking)
@@ -125,43 +148,36 @@ public class IntakeTest extends LinearOpMode {
             }
 
             if (gamepad1.leftStickButtonWasPressed()) {
-                isLocal = !isLocal;
+                mechWheels.SetIsLocal(!mechWheels.GetIsLocal()); // toggle is local
             }
 
-            double botHeading;
-            if (isLocal) {
-                botHeading = 0;
-            } else {
-                botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+            if (gamepad1.bWasPressed())
+            {
+                isTracking = !isTracking;
             }
 
-            // Rotate the movement direction counter to the bot's rotation
-            double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
-            double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
-
-            rotX = rotX * 1.1;  // Counteract imperfect strafing
-
-            // Denominator is the largest motor power (absolute value) or 1
-            // This ensures all the powers maintain the same ratio,
-            // but only if at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-            double frontLeftPower = (rotY + rotX + rx) / denominator;
-            double backLeftPower = (rotY - rotX + rx) / denominator;
-            double frontRightPower = (rotY - rotX - rx) / denominator;
-            double backRightPower = (rotY + rotX - rx) / denominator;
-
-            leftFront.setPower(frontLeftPower * MAX_DRIVE_POWER);
-            leftBack.setPower(backLeftPower * MAX_DRIVE_POWER);
-            rightFront.setPower(frontRightPower * MAX_DRIVE_POWER);
-            rightBack.setPower(backRightPower * MAX_DRIVE_POWER);
+            if (!lime_light.isConnected())
+            {
+                telemetry.addData("Limelight", "LL IS NOT CONNECTED");
+            }
+            else if (isTracking)
+            {
+                LLResult result = lime_light.getLatestResult();
+                if (result.isValid() && prevTimeSinceUpdate > timeSinceUpdate)
+                {
+                    double angleX = result.getTx();
+                    // target angle 0 (directly forward)
+                    // pdController.Calculate gives degrees/second the robot should be turning
+                    rx = pdController.Calculate(0, angleX) / 360; // divide by 360 to convert to motor power
+                }
+            }
 
 
-            telemetry.addData("Intake Speed: ", "Intake Speed: " + intakeMotorSpeed);
-            telemetry.addData("Motor", "FR: " + frontRightPower);
-            telemetry.addData("Motor", "FL: " + frontLeftPower);
-            telemetry.addData("Motor", "BR: " + backRightPower);
-            telemetry.addData("Motor", "BL: " + backLeftPower);
-            telemetry.addData("IMU", "Heading: " + botHeading);
+
+            mechWheels.SetSpeed(x, y, rx);
+            telemetry.addData("P", "P: " + pdController.GetP());
+            telemetry.addData("D", "D: " + pdController.GetD());
+            telemetry.addData("rx", "rx: " + rx);
             telemetry.update();
         }
     }
