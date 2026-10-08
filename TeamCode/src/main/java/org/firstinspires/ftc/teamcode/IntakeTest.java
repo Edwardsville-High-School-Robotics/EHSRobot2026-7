@@ -77,7 +77,8 @@ public class IntakeTest extends LinearOpMode {
 
         MechanumWheels mechWheels = new MechanumWheels(hardwareMap, MAX_DRIVE_POWER, parameters);
 
-        PDController pdController = new PDController(15.0, 1.0);
+        //PDController pdController = new PDController(15.0, 1.0);
+        PIDController pdController = new PIDController(15.0, 0.0, 1.0);
         lime_light.start();
         waitForStart();
 
@@ -135,6 +136,16 @@ public class IntakeTest extends LinearOpMode {
                 double p = pdController.GetP()+0.1;
                 pdController.SetP(p);
             }
+            if(gamepad1.leftTriggerWasPressed())
+            {
+                double i = pdController.GetI()+0.1;
+                pdController.SetI(i);
+            }
+            if(gamepad1.rightTriggerWasPressed())
+            {
+                double i = pdController.GetI()-0.1;
+                pdController.SetI(i);
+            }
 
             intakeMotorSpeed = Range.clip(intakeMotorSpeed, -1, 1);
 
@@ -177,6 +188,7 @@ public class IntakeTest extends LinearOpMode {
             mechWheels.SetSpeed(x, y, rx);
             telemetry.addData("P", "P: " + pdController.GetP());
             telemetry.addData("D", "D: " + pdController.GetD());
+            telemetry.addData("I", "I: " + pdController.GetI());
             telemetry.addData("rx", "rx: " + rx);
             telemetry.update();
         }
