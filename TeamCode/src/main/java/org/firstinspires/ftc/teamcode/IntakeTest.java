@@ -114,36 +114,36 @@ public class IntakeTest extends LinearOpMode {
 
             if (gamepad1.dpadLeftWasPressed())
             {
-                double d = pdController.GetD()-0.1;
+                double d = pdController.GetD()-0.05;
                 pdController.SetD(d);
             }
 
             if (gamepad1.dpadRightWasPressed())
             {
-                double d = pdController.GetD()+0.1;
+                double d = pdController.GetD()+0.05;
                 pdController.SetD(d);
             }
 
             if (gamepad1.leftBumperWasPressed())
             {
-                double p = pdController.GetP()-0.1;
+                double p = pdController.GetP()-0.25;
                 pdController.SetP(p);
             }
 
 
             if (gamepad1.rightBumperWasPressed())
             {
-                double p = pdController.GetP()+0.1;
+                double p = pdController.GetP()+0.25;
                 pdController.SetP(p);
             }
             if(gamepad1.leftTriggerWasPressed())
             {
-                double i = pdController.GetI()+0.1;
+                double i = pdController.GetI()+0.05;
                 pdController.SetI(i);
             }
             if(gamepad1.rightTriggerWasPressed())
             {
-                double i = pdController.GetI()-0.1;
+                double i = pdController.GetI()-0.05;
                 pdController.SetI(i);
             }
 
@@ -189,6 +189,7 @@ public class IntakeTest extends LinearOpMode {
             telemetry.addData("P", "P: " + pdController.GetP());
             telemetry.addData("D", "D: " + pdController.GetD());
             telemetry.addData("I", "I: " + pdController.GetI());
+            telemetry.addData("Area", "Area: " + pdController.area);
             telemetry.addData("rx", "rx: " + rx);
             telemetry.update();
         }

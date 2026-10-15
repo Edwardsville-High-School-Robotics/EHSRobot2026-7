@@ -56,8 +56,8 @@ public class PIDController {
 
         if (prev != 0)
         {
-            slope = (error - prev) / (timer.getElapsedTime());
-            area += 0.5 * (error+prev) * timer.getElapsedTime();
+            slope = (error - prev) / (timer.getElapsedTimeSeconds());
+            area += 0.5 * (error+prev) * timer.getElapsedTimeSeconds();
             //area += error * timer.getElapsedTime();
         }
 
